@@ -78,8 +78,8 @@ public class music{
 		}
 		return 3;
 	}
-	
-	//getter methods for Questions record type
+
+	//getter methods for Quiz record type
 	public static String[] getQuestion (Quiz q){
 		return q.question;
 	}
@@ -90,7 +90,7 @@ public class music{
 		return  q.answercorrect;
 	}
 	
-	//setter methods for Questions record type
+	//setter methods for Quiz record type
 	public static Quiz setQuestion(Quiz q, String[] quizquestion){
 		q.question = quizquestion;
 		return q;
