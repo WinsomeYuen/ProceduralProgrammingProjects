@@ -1,34 +1,63 @@
 import java.util.*;
+import java.io.*;
 
 public class music{
 	
 	//initialises record
-	public static void main (String[] param){
+	public static void main (String[] param)throws IOException{
 		print("Welcome to the kpop music quiz!");
-		int team = inputInt("How many players are on your team?");
-		Quiz q = new Quiz();
+		
 		String[] questions = {"What is the oldest member of BTS called? (full name)",
-							"Which group sang the song *Hola Hola*? ",
-							"When was the group got7 formed"};
+				"Which group sang the song *Hola Hola*? ",
+				"When was the group got7 formed"};
 		String[] answers = {"kim seokjin",
-							"kard",
-							"2014"};
+				"kard",
+				"2014"};
+
+		String team = inputString("What is your team name?");
+		int players = inputInt("How many players are on your team?");
+		int round = 0;
+		int members[][] = new int[players][3];
+		int[] answered = new int[questions.length];
+		Quiz q = new Quiz();
+		
+		String load = inputString("Would you like to load file? (yes or no)");
+		if(load.equals("yes")) {
+			BufferedReader inStream = new BufferedReader(new FileReader(team+".txt"));
+
+	        //the number of players stored       
+	        players = Integer.parseInt(inStream.readLine());
+	        //last question answered
+	        round = Integer.parseInt(inStream.readLine());
+	        
+	        for (int i=0; i<members.length; i++){
+	        	String line = inStream.readLine();
+	        	String[] split = line.split(" ");
+	        	for(int j=0; j<members[i].length; j++){
+	        		members[i][j] = Integer.parseInt(split[j]);
+	        	}
+	        }
+	                    
+	        for (int n=0; n<answered.length; n++){
+	                answered[n] = Integer.parseInt(inStream.readLine());
+	        }
+	        
+	        inStream.close();
+		}
 		
 		q = setQuestion(q, questions);
 		q = setAnswer(q, answers);
 		
-		start(q, team);
+		start(q, team, players, round, members, answered);
 	}
 	
 	//starts quiz, checks answers and prints out score totals
-	public static void start(Quiz a, int players){
+	public static void start(Quiz a, String team, int players, int round, int members[][], int[] answered)throws IOException{
 		int score = 0;
-		int members[][] = new int[players][3];
 		String[] questions = getQuestion(a);
 		String[] answers = getAnswer(a);
-		int[] answered = new int[questions.length];
 		
-		for(int j=0; j<questions.length; j++) {
+		for(int j=round; j<questions.length; j++) {
 			print("\nRound " + (j+1));
 			int count = 0;
 			
@@ -56,9 +85,16 @@ public class music{
 				System.out.println(String.format("%-10s %s", "Player "+(n+1)+" score:", total));
 			}
 			scores(members, score);
+			a = setScores(a, members);
+			a = setAnswerCorrect(a, answered);
 			
+			if(j!= questions.length-1){
+				String save = inputString("Do you want to save progress and quit?");
+				if(save.equals("yes")) {
+					saveProgress(a, team, players, j);
+				}
+			}
 		}
-		a = setAnswerCorrect(a, answered);
 		String answer = inputString("Do you want to see how well you did on each question?(yes or no)").toLowerCase();
 		
 		if(answer.equals("yes")) {
@@ -66,6 +102,29 @@ public class music{
 		}
 		print("\nYour final score is: " + score);
 		print("Thankyou for playing the quiz!");
+	}
+	
+	//saves team progress
+	public static void saveProgress(Quiz a, String team, int players, int round)throws IOException{
+		PrintWriter outputStream = new PrintWriter(new FileWriter(team +".txt"));
+
+        outputStream.println(players);
+        outputStream.println(round+1);
+        
+        for (int i=0; i<getScores(a).length; i++){
+        	for(int j=0; j<getScores(a)[i].length; j++){
+            outputStream.print(getScores(a)[i][j] + " ");
+        	}
+        	outputStream.println("");
+        }
+                    
+        for (int n=0; n<getAnswerCorrect(a).length; n++){
+                outputStream.println(getAnswerCorrect(a)[n]);
+        }
+        
+        outputStream.close();
+        print("Progress saved, see you next time!");
+		System.exit(0);
 	}
 	
 	//rolls dice to decide score
@@ -86,6 +145,9 @@ public class music{
 	public static String[] getAnswer (Quiz q){
 		return  q.answer;
 	}
+	public static int[][] getScores (Quiz q){
+		return  q.scores;
+	}
 	public static int[] getAnswerCorrect (Quiz q){
 		return  q.answercorrect;
 	}
@@ -97,6 +159,10 @@ public class music{
 	}
 	public static Quiz setAnswer (Quiz q, String[] quizanswer){
 		q.answer = quizanswer;
+		return q;
+	}
+	public static Quiz setScores(Quiz q, int[][] quizscore){
+		q.scores = quizscore;
 		return q;
 	}
 	public static Quiz setAnswerCorrect (Quiz q, int[] quizanswercorrect){
@@ -181,5 +247,6 @@ public class music{
 class Quiz{
 	String question[];
 	String answer[];
+	int scores[][];
 	int answercorrect[];
 }
